@@ -1,0 +1,48 @@
+* {
+  box-sizing: border-box;
+}
+
+.scroll-container {
+  overflow: auto;
+  border: 1px solid;
+  padding: 1rem;
+  resize: both;
+}
+
+.s1 {
+  height: 400px;
+}
+
+.s2 {
+  height: 500px;
+}
+
+.s3 {
+  height: 300vh;
+  width: 200vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  position: fixed;
+  height: 25vh;
+  width: 25vw;
+  left: 25vw;
+  top: 25vh;
+  background: #eee;
+  border: 1px solid;
+}
+
+.flyout {
+  background: black;
+  color: white;
+  padding: 1rem;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: var(--target-visible, 0);
+  transform: translate3d(var(--target-left), var(--target-top), 0) scale(var(--target-visible, 0));
+}
