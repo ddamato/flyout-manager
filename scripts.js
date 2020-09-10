@@ -9,8 +9,8 @@ target.addEventListener('targetmove', ({ detail }) => {
 })
 
 target.addEventListener('targetvisible', ({ detail }) => {
-  const { visible } = detail;
-  flyout.style.setProperty('--target-visible', Number(visible));
+  const { layer, container } = detail;
+  flyout.style.setProperty('--target-visible', Number(container && layer));
 })
 
 flyoutManager.then(mgr => mgr.observe(target)).catch(err => console.log(err));

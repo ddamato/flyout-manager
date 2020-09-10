@@ -1,5 +1,5 @@
 class FlyoutManager {
-  constructor({ precision } = { precision: .03 }) {
+  constructor({ precision } = { precision: .05 }) {
     this._registry = new Map();
     this._precision = precision;
     return new Promise((res) => {
@@ -14,21 +14,24 @@ class FlyoutManager {
     entries.forEach(function checkEntry(entry) {
       const { boundingClientRect, isIntersecting, target } = entry;
       this._registry.get(target)[isIntersecting ? 'add' : 'delete'](observer);
-      window.requestAnimationFrame(() => {
-        this._checkVisible(target, boundingClientRect);
-      });
+      this._checkVisible(target, boundingClientRect);
+      this._setMovement(target, boundingClientRect);
     }, this);
   }
 
-  _checkVisible(elem, boundingClientRect) {
-    const visible = !!this._registry.get(elem).size;
-    elem.dispatchEvent(new CustomEvent('targetvisible', { 
-      detail: { visible }
-    }));
+  _layerVisible(elem, boundingClientRect) {
+    const { left, top, width, height } = boundingClientRect;
+    const element = document.elementFromPoint(left + (width / 2), top + (height / 2));
+    return elem === element || elem.contains(element);
+  }
 
-    if (visible) {
-      this._setMovement(target, boundingClientRect);
-    }
+  _checkVisible(elem, boundingClientRect) {
+    elem.dispatchEvent(new CustomEvent('targetvisible', { 
+      detail: { 
+        container: !!this._registry.get(elem).size,
+        layer: this._layerVisible(elem, boundingClientRect)
+      }
+    }));
   }
 
   _setMovement(elem, rect) {
@@ -45,7 +48,12 @@ class FlyoutManager {
   }
 
   connect() {
-    const amount = Math.floor(Math.pow(this._precision, -1));
+    const amount = Math.round(Math.pow(this._precision, -1));
+    this._percent = this._precision * 100;
+    this._threshold = Array(amount)
+      .fill(this._precision)
+      .map((p, i) => (p * i).toFixed(2))
+      .map(Number);
     this._observers = Array(amount * amount)
       .fill(amount)
       .map(this._createOptions, this)
@@ -59,19 +67,18 @@ class FlyoutManager {
 
   _createOptions(amount, index) {
 
-    const percent = this._precision * 100;
-    const colPosition = index % amount;
-    const rowPosition = Math.floor(index / amount);
-
-    const top = colPosition * percent;
-    const left = rowPosition * percent;
-    const right = 100 - (left + percent);
-    const bottom = 100 - (top + percent);
-    const rootMargin = [top, right, bottom, left].map((x) => `-${x.toFixed(1)}%`).join(' ');
+    const x = Math.floor(index / amount);
+    const y = index % amount;
+    
+    const left = x * this._percent;
+    const top = y * this._percent;
+    const right = 100 - (left + this._percent);
+    const bottom = 100 - (top + this._percent);
+    const rootMargin = [top, right, bottom, left].map((m) => `-${m.toFixed(1)}%`).join(' ');
 
     return {
       rootMargin,
-      threshold: [0],
+      threshold: this._threshold,
       root: document.documentElement
     }
   }

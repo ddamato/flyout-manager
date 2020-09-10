@@ -44,5 +44,6 @@
   top: 0;
   left: 0;
   opacity: var(--target-visible, 0);
-  transform: translate3d(var(--target-left), var(--target-top), 0) scale(var(--target-visible, 0));
+  transition: opacity .5s ease;
+  transform: translate3d(var(--target-left), calc(var(--target-top) - 100% - 1rem), 0);
 }
